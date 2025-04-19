@@ -8,7 +8,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -20,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "security")
 @Validated
 @Profile("!no-security")
-@Data
 public class SecurityProperties {
     /**
      * Logging mode for incoming HTTP requests, see also {@link RequestResponseLoggingFilter}
@@ -40,6 +40,22 @@ public class SecurityProperties {
      */
     @NotNull
     private List<AntPathRequestMatcher> loggingIgnoreList = List.of(AntPathRequestMatcher.antMatcher("/actuator/**"));
+
+    public LoggingMode getLoggingMode() {
+        return loggingMode;
+    }
+
+    public void setLoggingMode(LoggingMode loggingMode) {
+        this.loggingMode = loggingMode;
+    }
+
+    public String getUserInfoUri() {
+        return userInfoUri;
+    }
+
+    public void setUserInfoUri(String userInfoUri) {
+        this.userInfoUri = userInfoUri;
+    }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", matchType = SuppressMatchType.EXACT)
     public List<AntPathRequestMatcher> getLoggingIgnoreListAsMatchers() {
