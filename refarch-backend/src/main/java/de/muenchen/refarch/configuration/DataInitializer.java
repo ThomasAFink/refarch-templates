@@ -60,7 +60,8 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Checking database initialization status...");
 
         // Initialize languages if needed
-        final Language english = getOrCreateEnglishLanguage();
+        final Language english = getOrCreateLanguage("English", "en", "fa-flag-usa", "mdi-flag-usa");
+        final Language german = getOrCreateLanguage("Deutsch", "de", "fa-flag", "mdi-flag");
 
         // Initialize roles if needed
         if (roleRepository.count() == 0) {
@@ -80,17 +81,17 @@ public class DataInitializer implements CommandLineRunner {
 
         // Initialize homepage if needed
         if (homepageRepository.count() == 0) {
-            createHomepage(english);
+            createHomepage(english, german);
         }
 
         // Initialize sample page if needed
         if (pageRepository.count() == 0) {
-            createSamplePage(english);
+            createSamplePage(english, german);
         }
 
         // Initialize sample blog post if needed
         if (postRepository.count() == 0) {
-            createSamplePost(english);
+            createSamplePost(english, german);
         }
 
         log.info("Database initialization check completed");
@@ -105,24 +106,19 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    private Language getOrCreateEnglishLanguage() {
-        // Find English language by abbreviation if it exists
+    private Language getOrCreateLanguage(String name, String abbreviation, String fontAwesomeIcon, String mdiIcon) {
         return languageRepository.findAll().stream()
-                .filter(lang -> "en".equals(lang.getAbbreviation()))
+                .filter(lang -> abbreviation.equals(lang.getAbbreviation()))
                 .findFirst()
                 .orElseGet(() -> {
-                    log.info("Creating default language: English");
-                    return createEnglishLanguage();
+                    log.info("Creating language: {}", name);
+                    final Language language = new Language();
+                    language.setName(name);
+                    language.setAbbreviation(abbreviation);
+                    language.setFontAwesomeIcon(fontAwesomeIcon);
+                    language.setMdiIcon(mdiIcon);
+                    return languageRepository.save(language);
                 });
-    }
-
-    private Language createEnglishLanguage() {
-        final Language english = new Language();
-        english.setName("English");
-        english.setAbbreviation("en");
-        english.setFontAwesomeIcon("fa-flag-usa");
-        english.setMdiIcon("mdi-flag-usa");
-        return languageRepository.save(english);
     }
 
     private User createAdminUser(final Role adminRole, final Role userRole) {
@@ -158,7 +154,7 @@ public class DataInitializer implements CommandLineRunner {
         userBioRepository.save(bio);
     }
 
-    private void createSamplePage(final Language language) {
+    private void createSamplePage(final Language english, final Language german) {
         log.info("Creating sample page");
 
         // Create page link
@@ -177,11 +173,11 @@ public class DataInitializer implements CommandLineRunner {
         page.setCommentsEnabled(true);
         page.setPublished(true);
 
-        // Create page content
-        final PageContent content = new PageContent();
-        content.setLanguage(language);
-        content.setTitle("About RefArch CMS");
-        content.setContent("""
+        // Create English page content
+        final PageContent englishContent = new PageContent();
+        englishContent.setLanguage(english);
+        englishContent.setTitle("About RefArch CMS");
+        englishContent.setContent("""
                 # About RefArch CMS
 
                 RefArch CMS is a modern, flexible content management system built with Spring Boot.
@@ -202,14 +198,42 @@ public class DataInitializer implements CommandLineRunner {
                 - Flexible content management
                 - Real-time collaboration tools
                 """);
-        content.setShortDescription("Learn about RefArch CMS, our mission, and our commitment to excellence in content management.");
-        content.setKeywords("cms, content management, spring boot, java, web application");
+        englishContent.setShortDescription("Learn about RefArch CMS, our mission, and our commitment to excellence in content management.");
+        englishContent.setKeywords("cms, content management, spring boot, java, web application");
 
-        page.addContent(content);
+        // Create German page content
+        final PageContent germanContent = new PageContent();
+        germanContent.setLanguage(german);
+        germanContent.setTitle("Über RefArch CMS");
+        germanContent.setContent("""
+                # Über RefArch CMS
+
+                RefArch CMS ist ein modernes, flexibles Content-Management-System, das mit Spring Boot entwickelt wurde.
+                Unsere Plattform bietet eine robuste Grundlage für die einfache und effiziente Verwaltung digitaler Inhalte.
+
+                ## Unsere Mission
+
+                Wir streben danach, das Content-Management zu vereinfachen und gleichzeitig hohe Standards in Bezug auf Sicherheit,
+                Leistung und Benutzerfreundlichkeit zu gewährleisten. Unser System ist sowohl leistungsstark als auch
+                intuitiv und erfüllt die Bedürfnisse von Content-Erstellern und technischen Administratoren gleichermaßen.
+
+                ## Hauptmerkmale
+
+                - Mehrsprachige Unterstützung für globale Reichweite
+                - Rollenbasierte Zugriffskontrolle für Sicherheit
+                - Modernes API-Design für Integration
+                - Flexible Content-Verwaltung
+                - Echtzeit-Kollaborationstools
+                """);
+        germanContent.setShortDescription("Erfahren Sie mehr über RefArch CMS, unsere Mission und unser Engagement für Exzellenz im Content-Management.");
+        germanContent.setKeywords("cms, content management, spring boot, java, webanwendung");
+
+        page.addContent(englishContent);
+        page.addContent(germanContent);
         pageRepository.save(page);
     }
 
-    private void createSamplePost(final Language language) {
+    private void createSamplePost(final Language english, final Language german) {
         log.info("Creating sample blog post");
 
         // Create post link
@@ -228,11 +252,11 @@ public class DataInitializer implements CommandLineRunner {
         post.setCommentsEnabled(true);
         post.setPublished(true);
 
-        // Create post content
-        final PostContent content = new PostContent();
-        content.setLanguage(language);
-        content.setTitle("Welcome to RefArch CMS Blog");
-        content.setContent("""
+        // Create English post content
+        final PostContent englishContent = new PostContent();
+        englishContent.setLanguage(english);
+        englishContent.setTitle("Welcome to RefArch CMS Blog");
+        englishContent.setContent("""
                 # Welcome to Our Blog
 
                 We're excited to launch the RefArch CMS blog! This space will serve as a hub for
@@ -249,14 +273,39 @@ public class DataInitializer implements CommandLineRunner {
 
                 ## Getting Started
                 """);
-        content.setShortDescription("Welcome to the official RefArch CMS blog! Stay tuned for updates, tutorials, and best practices.");
-        content.setKeywords("blog, welcome, cms, content management, announcements");
+        englishContent.setShortDescription("Welcome to the official RefArch CMS blog! Stay tuned for updates, tutorials, and best practices.");
+        englishContent.setKeywords("blog, welcome, cms, content management, announcements");
 
-        post.addContent(content);
+        // Create German post content
+        final PostContent germanContent = new PostContent();
+        germanContent.setLanguage(german);
+        germanContent.setTitle("Willkommen im RefArch CMS Blog");
+        germanContent.setContent("""
+                # Willkommen in unserem Blog
+
+                Wir freuen uns, den RefArch CMS Blog zu starten! Dieser Raum wird als Zentrum für
+                Ankündigungen, Tutorials, Best Practices und Einblicke in das Content-Management dienen.
+
+                ## Was Sie erwartet
+
+                Unser Blog wird verschiedene Themen abdecken, darunter:
+                - Produktaktualisierungen und neue Funktionen
+                - Technische Tutorials und Anleitungen
+                - Best Practices im Content-Management
+                - Fallstudien und Erfolgsgeschichten
+                - Community-Highlights
+
+                ## Erste Schritte
+                """);
+        germanContent.setShortDescription("Willkommen im offiziellen RefArch CMS Blog! Bleiben Sie dran für Updates, Tutorials und Best Practices.");
+        germanContent.setKeywords("blog, willkommen, cms, content management, ankündigungen");
+
+        post.addContent(englishContent);
+        post.addContent(germanContent);
         postRepository.save(post);
     }
 
-    private void createHomepage(final Language english) {
+    private void createHomepage(final Language english, final Language german) {
         log.info("Creating homepage");
 
         // Create homepage link
@@ -274,20 +323,34 @@ public class DataInitializer implements CommandLineRunner {
         homepage.setLink(homepageLink);
         homepage.setThumbnail("homepage-thumbnail.jpg");
 
-        // Create homepage content
-        final HomepageContent content = new HomepageContent();
-        content.setLanguage(english);
-        content.setWelcomeMessage("Welcome to RefArch CMS");
-        content.setWelcomeMessageExtended("Your Modern Content Management Solution");
-        content.setExploreOurWork("Explore Our Features");
-        content.setGetInvolved("Get Started Today");
-        content.setImportantLinks("Essential Resources");
-        content.setEcosystemLinks("Our Ecosystem");
-        content.setBlog("Latest Blog Posts");
-        content.setPapers("Documentation");
-        content.setReadMore("Read More");
+        // Create English homepage content
+        final HomepageContent englishContent = new HomepageContent();
+        englishContent.setLanguage(english);
+        englishContent.setWelcomeMessage("Welcome to RefArch CMS");
+        englishContent.setWelcomeMessageExtended("Your Modern Content Management Solution");
+        englishContent.setExploreOurWork("Explore Our Features");
+        englishContent.setGetInvolved("Get Started Today");
+        englishContent.setImportantLinks("Essential Resources");
+        englishContent.setEcosystemLinks("Our Ecosystem");
+        englishContent.setBlog("Latest Blog Posts");
+        englishContent.setPapers("Documentation");
+        englishContent.setReadMore("Read More");
 
-        homepage.addContent(content);
+        // Create German homepage content
+        final HomepageContent germanContent = new HomepageContent();
+        germanContent.setLanguage(german);
+        germanContent.setWelcomeMessage("Willkommen bei RefArch CMS");
+        germanContent.setWelcomeMessageExtended("Ihre moderne Content-Management-Lösung");
+        germanContent.setExploreOurWork("Entdecken Sie unsere Funktionen");
+        germanContent.setGetInvolved("Starten Sie noch heute");
+        germanContent.setImportantLinks("Wichtige Ressourcen");
+        germanContent.setEcosystemLinks("Unser Ökosystem");
+        germanContent.setBlog("Neueste Blog-Beiträge");
+        germanContent.setPapers("Dokumentation");
+        germanContent.setReadMore("Weiterlesen");
+
+        homepage.addContent(englishContent);
+        homepage.addContent(germanContent);
         homepageRepository.save(homepage);
     }
 }
