@@ -107,7 +107,6 @@ public class DynamicAuthenticationFilter extends OncePerRequestFilter {
         try {
             final JWTClaimsSet claims = jwtService.parseToken(token);
 
-            @SuppressWarnings("unchecked")
             final List<String> authorities = claims.getStringListClaim(AUTHORITIES_CLAIM);
 
             final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

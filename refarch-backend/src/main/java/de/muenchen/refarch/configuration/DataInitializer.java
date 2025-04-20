@@ -1,8 +1,8 @@
 package de.muenchen.refarch.configuration;
 
 import de.muenchen.refarch.homepage.Homepage;
-import de.muenchen.refarch.homepage.content.HomepageContent;
 import de.muenchen.refarch.homepage.HomepageRepository;
+import de.muenchen.refarch.homepage.content.HomepageContent;
 import de.muenchen.refarch.language.Language;
 import de.muenchen.refarch.language.LanguageRepository;
 import de.muenchen.refarch.link.Link;
@@ -20,6 +20,8 @@ import de.muenchen.refarch.user.User;
 import de.muenchen.refarch.user.UserRepository;
 import de.muenchen.refarch.user.bio.UserBio;
 import de.muenchen.refarch.user.bio.UserBioRepository;
+import java.util.Arrays;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -27,9 +29,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Arrays;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -106,7 +105,7 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    private Language getOrCreateLanguage(String name, String abbreviation, String fontAwesomeIcon, String mdiIcon) {
+    private Language getOrCreateLanguage(final String name, final String abbreviation, final String fontAwesomeIcon, final String mdiIcon) {
         return languageRepository.findAll().stream()
                 .filter(lang -> abbreviation.equals(lang.getAbbreviation()))
                 .findFirst()

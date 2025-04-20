@@ -8,8 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -45,7 +43,7 @@ public class SecurityProperties {
         return loggingMode;
     }
 
-    public void setLoggingMode(LoggingMode loggingMode) {
+    public void setLoggingMode(final LoggingMode loggingMode) {
         this.loggingMode = loggingMode;
     }
 
@@ -53,7 +51,7 @@ public class SecurityProperties {
         return userInfoUri;
     }
 
-    public void setUserInfoUri(String userInfoUri) {
+    public void setUserInfoUri(final String userInfoUri) {
         this.userInfoUri = userInfoUri;
     }
 
@@ -68,5 +66,43 @@ public class SecurityProperties {
 
     public void setLoggingIgnoreList(final List<String> patterns) {
         this.loggingIgnoreList = patterns.stream().map(AntPathRequestMatcher::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Validates the user info URI to ensure it's properly formatted.
+     *
+     * @throws IllegalArgumentException if the URI is not properly formatted
+     */
+    public void validateUserInfoUri() {
+        if (userInfoUri == null || userInfoUri.isBlank()) {
+            throw new IllegalArgumentException("User info URI cannot be null or blank");
+        }
+        if (!userInfoUri.startsWith("http://") && !userInfoUri.startsWith("https://")) {
+            throw new IllegalArgumentException("User info URI must start with http:// or https://");
+        }
+    }
+
+    /**
+     * Checks if logging is enabled for the current configuration.
+     *
+     * @return true if logging is enabled, false otherwise
+     */
+    public boolean isLoggingEnabled() {
+        return loggingMode != LoggingMode.NONE;
+    }
+
+    /**
+     * Validates the entire configuration.
+     *
+     * @throws IllegalArgumentException if the configuration is invalid
+     */
+    public void validate() {
+        validateUserInfoUri();
+        if (loggingMode == null) {
+            throw new IllegalArgumentException("Logging mode cannot be null");
+        }
+        if (loggingIgnoreList == null) {
+            throw new IllegalArgumentException("Logging ignore list cannot be null");
+        }
     }
 }

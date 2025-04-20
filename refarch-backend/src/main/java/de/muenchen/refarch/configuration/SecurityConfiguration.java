@@ -1,12 +1,11 @@
 package de.muenchen.refarch.configuration;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -32,23 +31,24 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Profile("!no-security")
 public class SecurityConfiguration {
 
     private final SecurityProperties securityProperties;
 
     @Autowired
-    public SecurityConfiguration(SecurityProperties securityProperties) {
+    public SecurityConfiguration(final SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/actuator/**")).permitAll()
-                .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/actuator/**")).permitAll()
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
@@ -56,23 +56,23 @@ public class SecurityConfiguration {
     @Bean
     public JwtDecoder jwtDecoder() {
         try {
-            String jwkSetUri = securityProperties.getUserInfoUri().replace("/userinfo", "/certs");
-            
-            NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-            
+            final String jwkSetUri = securityProperties.getUserInfoUri().replace("/userinfo", "/certs");
+
+            final NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
             // Configure token validation
-            OAuth2TokenValidator<Jwt> defaultValidators = JwtValidators.createDefault();
-            Set<String> requiredClaims = new HashSet<>(Set.of("sub", "iss", "exp", "iat", "aud"));
-            OAuth2TokenValidator<Jwt> claimsValidator = token -> {
+            final OAuth2TokenValidator<Jwt> defaultValidators = JwtValidators.createDefault();
+            final Set<String> requiredClaims = new HashSet<>(Set.of("sub", "iss", "exp", "iat", "aud"));
+            final OAuth2TokenValidator<Jwt> claimsValidator = token -> {
                 if (token.getClaims().keySet().containsAll(requiredClaims)) {
                     return OAuth2TokenValidatorResult.success();
                 }
                 return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token", "Missing required claims", null));
             };
-            
-            OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(defaultValidators, claimsValidator);
+
+            final OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(defaultValidators, claimsValidator);
             jwtDecoder.setJwtValidator(validator);
-            
+
             return jwtDecoder;
         } catch (Exception e) {
             throw new SecurityConfigurationException("Failed to configure JWT decoder", e);
@@ -81,7 +81,9 @@ public class SecurityConfiguration {
 }
 
 class SecurityConfigurationException extends RuntimeException {
-    public SecurityConfigurationException(String message, Throwable cause) {
+    private static final long serialVersionUID = 1L;
+
+    public SecurityConfigurationException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }
