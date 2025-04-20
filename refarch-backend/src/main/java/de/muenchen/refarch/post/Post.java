@@ -1,6 +1,5 @@
 package de.muenchen.refarch.post;
 
-import de.muenchen.refarch.common.BaseEntity;
 import de.muenchen.refarch.common.EntityCopyUtils;
 import de.muenchen.refarch.link.Link;
 import de.muenchen.refarch.post.content.PostContent;
@@ -8,7 +7,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,15 +21,18 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Getter
 @Setter
 @SuppressWarnings("PMD.ShortClassName")
-public class Post extends BaseEntity {
+public class Post {
 
-    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "link_id")
     @Getter(AccessLevel.NONE)
     private Link link;
 
+    @Column(length = 510)
     private String thumbnail;
 
     @Column(name = "comments_enabled")
@@ -57,13 +61,27 @@ public class Post extends BaseEntity {
         return contents == null ? Collections.emptySet() : Collections.unmodifiableSet(contents);
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        return this == o || (o instanceof Post other && Objects.equals(id, other.id));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     public void addContent(final PostContent content) {
-        contents.add(content);
-        content.setPost(this);
+        if (content != null) {
+            contents.add(content);
+            content.setPost(this);
+        }
     }
 
     public void removeContent(final PostContent content) {
-        contents.remove(content);
-        content.setPost(null);
+        if (content != null) {
+            contents.remove(content);
+            content.setPost(null);
+        }
     }
 }

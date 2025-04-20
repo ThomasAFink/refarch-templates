@@ -4,6 +4,7 @@ import de.muenchen.refarch.common.EntityCopyUtils;
 import de.muenchen.refarch.language.Language;
 import de.muenchen.refarch.page.Page;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -31,6 +32,7 @@ public class PageContent {
     @JoinColumn(name = "page_id", nullable = false)
     private Page page;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id", nullable = false)
     @Getter(AccessLevel.NONE)

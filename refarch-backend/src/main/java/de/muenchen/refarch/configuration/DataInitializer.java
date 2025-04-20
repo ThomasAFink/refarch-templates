@@ -299,6 +299,7 @@ public class DataInitializer implements CommandLineRunner {
         germanContent.setShortDescription("Willkommen im offiziellen RefArch CMS Blog! Bleiben Sie dran für Updates, Tutorials und Best Practices.");
         germanContent.setKeywords("blog, willkommen, cms, content management, ankündigungen");
 
+        // Add both contents to the post
         post.addContent(englishContent);
         post.addContent(germanContent);
         postRepository.save(post);

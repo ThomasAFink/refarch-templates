@@ -5,12 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record PageContentRequestDTO(
-        @NotNull(message = "languageId must not be null") UUID languageId,
+        @NotNull(message = "Language ID is required") UUID languageId,
 
-        @NotBlank(message = "title must not be blank") String title,
+        @NotBlank(message = "Title is required") String title,
 
-        @NotBlank(message = "content must not be blank") String content,
+        @NotBlank(message = "Content is required") String content,
 
         String shortDescription,
+
         String keywords) {
 }

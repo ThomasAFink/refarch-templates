@@ -22,6 +22,7 @@ import de.muenchen.refarch.post.dto.PostRequestDTO;
 import de.muenchen.refarch.post.dto.PostResponseDTO;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,26 +48,29 @@ import org.testcontainers.utility.DockerImageName;
 @ActiveProfiles(profiles = { TestConstants.SPRING_TEST_PROFILE, TestConstants.SPRING_NO_SECURITY_PROFILE })
 @AutoConfigureMockMvc
 @Import(TestConfig.class)
-@SuppressWarnings("PMD.TooManyFields")
 class PostControllerTest {
+    // Constants
+    private static final String API_POSTS = "/posts";
+    private static final String API_POSTS_ID = "/posts/{id}";
+    private static final String API_POSTS_CONTENT = "/posts/{postId}/content";
+    private static final String API_POSTS_CONTENT_LANGUAGE = "/posts/{postId}/content/{languageId}";
+    private static final String TEST_TITLE = "Test Post";
+    private static final String TEST_DESCRIPTION = "Test post description";
+    private static final String TEST_KEYWORDS = "test, post, keywords";
+    private static final String TEST_CONTENT = "Test post content";
+    private static final String TEST_LANGUAGE_NAME = "English";
+    private static final String TEST_LANGUAGE_ABBREV = "en";
+    private static final String TEST_LINK_URL = "/test-post";
+    private static final String TEST_LINK_TEXT = "Test Post";
 
-    private static final String THUMBNAIL_PATH = "thumbnail.jpg";
-    private static final String TEST_TITLE = "Test Title";
-    private static final String TEST_CONTENT = "Test Content";
-    private static final String TEST_DESCRIPTION = "Test Description";
-    private static final String TEST_KEYWORDS = "test,keywords";
-    private static final String EXAMPLE_URL = "https://example.com";
-    private static final String EXAMPLE_LINK_NAME = "Example Link";
-    private static final String ENGLISH_LANGUAGE_NAME = "English";
-    private static final String ENGLISH_LANGUAGE_ABBREV = "en";
-    private static final String PMD_SUPPRESSION_SINGULAR_FIELD = "PMD.SingularField";
-
+    // Test container
     @Container
     @ServiceConnection
     @SuppressWarnings("unused")
     private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>(
             DockerImageName.parse(TestConstants.TESTCONTAINERS_POSTGRES_IMAGE));
 
+    // Spring injected dependencies
     @Autowired
     private MockMvc mockMvc;
 
@@ -88,52 +92,48 @@ class PostControllerTest {
     @MockitoBean
     private LanguageService languageService;
 
+    // Test data
     private UUID postId;
-    @SuppressWarnings(PMD_SUPPRESSION_SINGULAR_FIELD)
     private UUID linkId;
-    @SuppressWarnings(PMD_SUPPRESSION_SINGULAR_FIELD)
     private UUID languageId;
-    @SuppressWarnings(PMD_SUPPRESSION_SINGULAR_FIELD)
-    private Link link;
-    @SuppressWarnings(PMD_SUPPRESSION_SINGULAR_FIELD)
-    private Language language;
     private PostRequestDTO postRequestDTO;
     private PostResponseDTO postResponseDTO;
     private PostContentRequestDTO contentRequestDTO;
     private PostContentResponseDTO contentResponseDTO;
-    @SuppressWarnings(PMD_SUPPRESSION_SINGULAR_FIELD)
-    private LocalDateTime now;
 
     @BeforeEach
     void setUp() {
         postId = UUID.randomUUID();
         linkId = UUID.randomUUID();
         languageId = UUID.randomUUID();
-        now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now();
 
-        link = new Link();
+        final Link link = new Link();
         link.setId(linkId);
-        link.setUrl(EXAMPLE_URL);
-        link.setName(EXAMPLE_LINK_NAME);
+        link.setUrl(TEST_LINK_URL);
+        link.setName(TEST_LINK_TEXT);
         link.setScope(LinkScope.EXTERNAL);
 
-        language = new Language();
+        final Language language = new Language();
         language.setId(languageId);
-        language.setName(ENGLISH_LANGUAGE_NAME);
-        language.setAbbreviation(ENGLISH_LANGUAGE_ABBREV);
+        language.setName(TEST_LANGUAGE_NAME);
+        language.setAbbreviation(TEST_LANGUAGE_ABBREV);
+        language.setFontAwesomeIcon("flag-usa");
+        language.setMdiIcon("flag");
 
         postRequestDTO = new PostRequestDTO(
                 linkId,
-                THUMBNAIL_PATH,
+                TEST_LINK_URL,
                 true,
                 true);
 
         postResponseDTO = new PostResponseDTO(
                 postId,
-                link,
-                THUMBNAIL_PATH,
+                linkId,
+                TEST_LINK_URL,
                 true,
                 true,
+                Set.of(),
                 now,
                 now);
 
@@ -147,7 +147,7 @@ class PostControllerTest {
         contentResponseDTO = new PostContentResponseDTO(
                 UUID.randomUUID(),
                 postId,
-                language,
+                languageId,
                 TEST_TITLE,
                 TEST_CONTENT,
                 TEST_DESCRIPTION,
@@ -157,80 +157,91 @@ class PostControllerTest {
     }
 
     @Test
-    void shouldReturnAllPosts() throws Exception {
-        when(postService.findAll()).thenReturn(List.of(postResponseDTO));
+    void whenGettingAllPosts_shouldReturnList() throws Exception {
+        // Arrange
+        final List<PostResponseDTO> posts = List.of(postResponseDTO);
+        when(postService.findAll()).thenReturn(posts);
 
-        mockMvc.perform(get("/posts"))
+        // Act & Assert
+        mockMvc.perform(get(API_POSTS))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(postId.toString()))
-                .andExpect(jsonPath("$[0].thumbnail").value(THUMBNAIL_PATH))
-                .andExpect(jsonPath("$[0].commentsEnabled").value(true));
+                .andExpect(jsonPath("$[0].linkId").value(linkId.toString()))
+                .andExpect(jsonPath("$[0].thumbnail").value(TEST_LINK_URL));
 
         verify(postService).findAll();
     }
 
     @Test
-    void shouldReturnPostById() throws Exception {
+    void whenGettingPostById_shouldReturnPost() throws Exception {
+        // Arrange
         when(postService.findById(postId)).thenReturn(postResponseDTO);
 
-        mockMvc.perform(get("/posts/{id}", postId))
+        // Act & Assert
+        mockMvc.perform(get(API_POSTS_ID, postId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(postId.toString()))
-                .andExpect(jsonPath("$.thumbnail").value(THUMBNAIL_PATH))
-                .andExpect(jsonPath("$.commentsEnabled").value(true));
+                .andExpect(jsonPath("$.linkId").value(linkId.toString()))
+                .andExpect(jsonPath("$.thumbnail").value(TEST_LINK_URL));
 
         verify(postService).findById(postId);
     }
 
     @Test
-    void shouldCreateAndReturnPost() throws Exception {
+    void whenCreatingPost_shouldReturnCreated() throws Exception {
+        // Arrange
         when(postService.create(any(PostRequestDTO.class))).thenReturn(postResponseDTO);
 
-        mockMvc.perform(post("/posts")
+        // Act & Assert
+        mockMvc.perform(post(API_POSTS)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postRequestDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(postId.toString()))
-                .andExpect(jsonPath("$.thumbnail").value(THUMBNAIL_PATH))
-                .andExpect(jsonPath("$.commentsEnabled").value(true));
+                .andExpect(jsonPath("$.linkId").value(linkId.toString()))
+                .andExpect(jsonPath("$.thumbnail").value(TEST_LINK_URL));
 
         verify(postService).create(any(PostRequestDTO.class));
     }
 
     @Test
-    void shouldUpdateAndReturnPost() throws Exception {
+    void whenUpdatingPost_shouldReturnUpdated() throws Exception {
+        // Arrange
         when(postService.update(eq(postId), any(PostRequestDTO.class))).thenReturn(postResponseDTO);
 
-        mockMvc.perform(put("/posts/{id}", postId)
+        // Act & Assert
+        mockMvc.perform(put(API_POSTS_ID, postId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postRequestDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(postId.toString()))
-                .andExpect(jsonPath("$.thumbnail").value(THUMBNAIL_PATH))
-                .andExpect(jsonPath("$.commentsEnabled").value(true));
+                .andExpect(jsonPath("$.linkId").value(linkId.toString()))
+                .andExpect(jsonPath("$.thumbnail").value(TEST_LINK_URL));
 
         verify(postService).update(eq(postId), any(PostRequestDTO.class));
     }
 
     @Test
-    void shouldDeletePost() throws Exception {
-        doNothing().when(postService).delete(postId);
-
-        mockMvc.perform(delete("/posts/{id}", postId))
+    void whenDeletingPost_shouldSucceed() throws Exception {
+        // Act & Assert
+        mockMvc.perform(delete(API_POSTS_ID, postId))
                 .andExpect(status().isNoContent());
 
         verify(postService).delete(postId);
     }
 
     @Test
-    void shouldReturnAllPostContent() throws Exception {
-        when(postService.findAllContentByPost(postId)).thenReturn(List.of(contentResponseDTO));
+    void whenGettingAllPostContent_shouldReturnList() throws Exception {
+        // Arrange
+        final List<PostContentResponseDTO> contents = List.of(contentResponseDTO);
+        when(postService.findAllContentByPost(postId)).thenReturn(contents);
 
-        mockMvc.perform(get("/posts/{postId}/content", postId))
+        // Act & Assert
+        mockMvc.perform(get(API_POSTS_CONTENT, postId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].postId").value(postId.toString()))
@@ -241,10 +252,12 @@ class PostControllerTest {
     }
 
     @Test
-    void shouldReturnPostContent() throws Exception {
+    void whenGettingPostContent_shouldReturnContent() throws Exception {
+        // Arrange
         when(postService.findContentByPostAndLanguage(postId, languageId)).thenReturn(contentResponseDTO);
 
-        mockMvc.perform(get("/posts/{postId}/content/{languageId}", postId, languageId))
+        // Act & Assert
+        mockMvc.perform(get(API_POSTS_CONTENT_LANGUAGE, postId, languageId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.postId").value(postId.toString()))
@@ -255,10 +268,13 @@ class PostControllerTest {
     }
 
     @Test
-    void shouldCreateAndReturnPostContent() throws Exception {
-        when(postService.createContent(eq(postId), any(PostContentRequestDTO.class))).thenReturn(contentResponseDTO);
+    void whenCreatingPostContent_shouldReturnCreated() throws Exception {
+        // Arrange
+        when(postService.createContent(eq(postId), any(PostContentRequestDTO.class)))
+                .thenReturn(contentResponseDTO);
 
-        mockMvc.perform(post("/posts/{postId}/content", postId)
+        // Act & Assert
+        mockMvc.perform(post(API_POSTS_CONTENT, postId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contentRequestDTO)))
                 .andExpect(status().isCreated())
@@ -271,10 +287,13 @@ class PostControllerTest {
     }
 
     @Test
-    void shouldUpdateAndReturnPostContent() throws Exception {
-        when(postService.updateContent(eq(postId), eq(languageId), any(PostContentRequestDTO.class))).thenReturn(contentResponseDTO);
+    void whenUpdatingPostContent_shouldReturnUpdated() throws Exception {
+        // Arrange
+        when(postService.updateContent(eq(postId), eq(languageId), any(PostContentRequestDTO.class)))
+                .thenReturn(contentResponseDTO);
 
-        mockMvc.perform(put("/posts/{postId}/content/{languageId}", postId, languageId)
+        // Act & Assert
+        mockMvc.perform(put(API_POSTS_CONTENT_LANGUAGE, postId, languageId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contentRequestDTO)))
                 .andExpect(status().isOk())
@@ -287,10 +306,9 @@ class PostControllerTest {
     }
 
     @Test
-    void shouldDeletePostContent() throws Exception {
-        doNothing().when(postService).deleteContent(postId, languageId);
-
-        mockMvc.perform(delete("/posts/{postId}/content/{languageId}", postId, languageId))
+    void whenDeletingPostContent_shouldSucceed() throws Exception {
+        // Act & Assert
+        mockMvc.perform(delete(API_POSTS_CONTENT_LANGUAGE, postId, languageId))
                 .andExpect(status().isNoContent());
 
         verify(postService).deleteContent(postId, languageId);

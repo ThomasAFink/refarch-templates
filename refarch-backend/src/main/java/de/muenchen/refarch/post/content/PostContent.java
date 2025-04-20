@@ -1,6 +1,5 @@
 package de.muenchen.refarch.post.content;
 
-import de.muenchen.refarch.common.BaseEntity;
 import de.muenchen.refarch.common.EntityCopyUtils;
 import de.muenchen.refarch.language.Language;
 import de.muenchen.refarch.post.Post;
@@ -23,9 +22,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 )
 @Getter
 @Setter
-public class PostContent extends BaseEntity {
-
-    private static final long serialVersionUID = 1L;
+public class PostContent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,7 +30,6 @@ public class PostContent extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
-    @Getter(AccessLevel.NONE)
     private Post post;
 
     @NotNull
@@ -61,11 +57,12 @@ public class PostContent extends BaseEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Post getPost() {
+        return EntityCopyUtils.copyPost(post);
+    }
+
     public Language getLanguage() {
         return EntityCopyUtils.copyLanguage(language);
     }
 
-    public Post getPost() {
-        return EntityCopyUtils.copyPost(post);
-    }
 }

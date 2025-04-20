@@ -1,45 +1,48 @@
 package de.muenchen.refarch.post.dto;
 
-import de.muenchen.refarch.link.Link;
+import de.muenchen.refarch.post.content.dto.PostContentResponseDTO;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public record PostResponseDTO(
         UUID id,
-        Link link,
+        UUID linkId,
         String thumbnail,
         boolean commentsEnabled,
         boolean published,
+        Set<PostContentResponseDTO> contents,
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {
-
+    /**
+     * Creates a new PostResponseDTO with defensive copy of contents.
+     */
     public PostResponseDTO {
-        if (link != null) {
-            final Link defensiveCopy = new Link();
-            defensiveCopy.setId(link.getId());
-            defensiveCopy.setUrl(link.getUrl());
-            defensiveCopy.setName(link.getName());
-            defensiveCopy.setFontAwesomeIcon(link.getFontAwesomeIcon());
-            defensiveCopy.setMdiIcon(link.getMdiIcon());
-            defensiveCopy.setType(link.getType());
-            defensiveCopy.setScope(link.getScope());
-            link = defensiveCopy;
-        }
+        contents = defensiveCopyContents(contents);
     }
 
+    /**
+     * Returns an unmodifiable view of the contents set.
+     * If the contents are null, returns an empty set.
+     *
+     * @return An unmodifiable set of post contents
+     */
     @Override
-    public Link link() {
-        if (link == null) {
-            return null;
-        }
-        final Link defensiveCopy = new Link();
-        defensiveCopy.setId(link.getId());
-        defensiveCopy.setUrl(link.getUrl());
-        defensiveCopy.setName(link.getName());
-        defensiveCopy.setFontAwesomeIcon(link.getFontAwesomeIcon());
-        defensiveCopy.setMdiIcon(link.getMdiIcon());
-        defensiveCopy.setType(link.getType());
-        defensiveCopy.setScope(link.getScope());
-        return defensiveCopy;
+    public Set<PostContentResponseDTO> contents() {
+        return defensiveCopyContents(contents);
     }
+
+    /**
+     * Creates a defensive copy of the contents set.
+     *
+     * @param contentsToDefend The set to create a defensive copy of
+     * @return An unmodifiable defensive copy of the set, or an empty set if input is null
+     */
+    private static Set<PostContentResponseDTO> defensiveCopyContents(final Set<PostContentResponseDTO> contentsToDefend) {
+        return contentsToDefend == null ? Collections.emptySet()
+                : Collections.unmodifiableSet(new HashSet<>(contentsToDefend));
+    }
+
 }

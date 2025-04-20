@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record PageRequestDTO(
-        UUID linkId,
+        @NotNull(message = "Link ID is required") UUID linkId,
         String thumbnail,
-        @NotNull(message = "commentsEnabled must not be null") Boolean commentsEnabled,
-        @NotNull(message = "published must not be null") Boolean published) {
+        @NotNull(message = "Comments enabled flag is required") Boolean commentsEnabled,
+        @NotNull(message = "Published flag is required") Boolean published) {
 }

@@ -13,8 +13,8 @@ import de.muenchen.refarch.post.dto.PostResponseDTO;
 import de.muenchen.refarch.security.Authorities;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -82,7 +82,7 @@ public class PostService {
     public void delete(final UUID id) {
         final Post post = postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + id));
-        postContentRepository.deleteAllByPost(post);
+        postContentRepository.deleteAll(post.getContents());
         postRepository.delete(post);
     }
 
@@ -91,7 +91,7 @@ public class PostService {
     public List<PostContentResponseDTO> findAllContentByPost(final UUID postId) {
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + postId));
-        return postContentRepository.findAllByPost(post).stream()
+        return post.getContents().stream()
                 .map(this::mapToContentResponseDTO)
                 .toList();
     }
@@ -99,11 +99,10 @@ public class PostService {
     @PreAuthorize(Authorities.POST_READ)
     @Transactional(readOnly = true)
     public PostContentResponseDTO findContentByPostAndLanguage(final UUID postId, final UUID languageId) {
-        final Post post = postRepository.findById(postId)
+        postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + postId));
-        final Language language = languageService.getLanguageById(languageId);
-
-        return postContentRepository.findByPostAndLanguage(post, language)
+        languageService.getLanguageById(languageId); // This will throw if language doesn't exist
+        return postContentRepository.findByPostIdAndLanguageId(postId, languageId)
                 .map(this::mapToContentResponseDTO)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format(CONTENT_NOT_FOUND, postId, languageId)));
@@ -115,13 +114,12 @@ public class PostService {
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + postId));
         final Language language = languageService.getLanguageById(request.languageId());
-
-        final Optional<PostContent> existingContent = postContentRepository.findByPostAndLanguage(post, language);
-        if (existingContent.isPresent()) {
+    
+        if (postContentRepository.existsByPostIdAndLanguageId(postId, language.getId())) {
             throw new IllegalStateException(
                     String.format(CONTENT_EXISTS, postId, language.getAbbreviation()));
         }
-
+    
         final PostContent content = new PostContent();
         content.setPost(post);
         content.setLanguage(language);
@@ -129,26 +127,26 @@ public class PostService {
         content.setContent(request.content());
         content.setShortDescription(request.shortDescription());
         content.setKeywords(request.keywords());
-
+    
+        post.addContent(content);
         return mapToContentResponseDTO(postContentRepository.save(content));
     }
-
+    
     @PreAuthorize(Authorities.POST_WRITE)
     @Transactional
     public PostContentResponseDTO updateContent(final UUID postId, final UUID languageId, final PostContentRequestDTO request) {
-        final Post post = postRepository.findById(postId)
+        postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + postId));
-        final Language language = languageService.getLanguageById(languageId);
-
-        final PostContent existingContent = postContentRepository.findByPostAndLanguage(post, language)
+        languageService.getLanguageById(languageId); // This will throw if language doesn't exist
+        final PostContent existingContent = postContentRepository.findByPostIdAndLanguageId(postId, languageId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format(CONTENT_NOT_FOUND, postId, languageId)));
-
+    
         existingContent.setTitle(request.title());
         existingContent.setContent(request.content());
         existingContent.setShortDescription(request.shortDescription());
         existingContent.setKeywords(request.keywords());
-
+    
         return mapToContentResponseDTO(postContentRepository.save(existingContent));
     }
 
@@ -157,12 +155,11 @@ public class PostService {
     public void deleteContent(final UUID postId, final UUID languageId) {
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + postId));
-        final Language language = languageService.getLanguageById(languageId);
-
-        final PostContent content = postContentRepository.findByPostAndLanguage(post, language)
+        final PostContent content = postContentRepository.findByPostIdAndLanguageId(postId, languageId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format(CONTENT_NOT_FOUND, postId, languageId)));
-
+    
+        post.removeContent(content);
         postContentRepository.delete(content);
     }
 
@@ -178,10 +175,13 @@ public class PostService {
     private PostResponseDTO mapToResponseDTO(final Post post) {
         return new PostResponseDTO(
                 post.getId(),
-                post.getLink(),
+                post.getLink().getId(),
                 post.getThumbnail(),
                 post.isCommentsEnabled(),
                 post.isPublished(),
+                post.getContents().stream()
+                        .map(this::mapToContentResponseDTO)
+                        .collect(Collectors.toSet()),
                 post.getCreatedAt(),
                 post.getUpdatedAt());
     }
@@ -190,7 +190,7 @@ public class PostService {
         return new PostContentResponseDTO(
                 content.getId(),
                 content.getPost().getId(),
-                content.getLanguage(),
+                content.getLanguage().getId(),
                 content.getTitle(),
                 content.getContent(),
                 content.getShortDescription(),
