@@ -11,7 +11,6 @@ import de.muenchen.refarch.TestConstants;
 import de.muenchen.refarch.config.TestConfig;
 import de.muenchen.refarch.link.dto.LinkRequestDTO;
 import de.muenchen.refarch.link.dto.LinkResponseDTO;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,11 +18,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -60,22 +59,20 @@ class LinkControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private LinkService linkService;
 
-    @MockBean
+    @MockitoBean
     private LinkRepository linkRepository;
 
     private UUID linkId;
     private LinkRequestDTO linkRequestDTO;
     private LinkResponseDTO linkResponseDTO;
-    private LocalDateTime now;
 
     @BeforeEach
     void setUp() {
         linkId = UUID.randomUUID();
 
-        // Setup test request DTO
         linkRequestDTO = new LinkRequestDTO(
                 EXAMPLE_URL,
                 EXAMPLE_LINK_NAME,
@@ -84,7 +81,6 @@ class LinkControllerTest {
                 NAVIGATION_TYPE,
                 LinkScope.EXTERNAL);
 
-        // Setup test response DTO
         linkResponseDTO = new LinkResponseDTO(
                 linkId,
                 EXAMPLE_URL,
@@ -93,8 +89,6 @@ class LinkControllerTest {
                 MDI_ICON,
                 NAVIGATION_TYPE,
                 LinkScope.EXTERNAL);
-
-        now = LocalDateTime.now();
     }
 
     @Test

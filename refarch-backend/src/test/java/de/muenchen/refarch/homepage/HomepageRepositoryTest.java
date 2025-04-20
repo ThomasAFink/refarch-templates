@@ -3,7 +3,6 @@ package de.muenchen.refarch.homepage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.muenchen.refarch.homepage.content.HomepageContent;
-import de.muenchen.refarch.homepage.content.HomepageContentRepository;
 import de.muenchen.refarch.language.Language;
 import de.muenchen.refarch.link.Link;
 import de.muenchen.refarch.link.LinkScope;
@@ -31,9 +30,6 @@ class HomepageRepositoryTest {
 
     @Autowired
     private HomepageRepository homepageRepository;
-
-    @Autowired
-    private HomepageContentRepository homepageContentRepository;
 
     @Autowired
     private TestEntityManager entityManager;

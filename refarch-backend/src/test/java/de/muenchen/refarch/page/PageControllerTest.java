@@ -29,11 +29,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -55,7 +55,6 @@ class PageControllerTest {
     private static final String API_PAGES_CONTENT = "/pages/{pageId}/content";
     private static final String API_PAGES_CONTENT_LANGUAGE = "/pages/{pageId}/content/{languageId}";
     private static final String TEST_TITLE = "Test Page";
-    private static final String TEST_SLUG = "test-page";
     private static final String TEST_DESCRIPTION = "Test page description";
     private static final String TEST_KEYWORDS = "test, page, keywords";
     private static final String TEST_CONTENT = "Test page content";
@@ -63,8 +62,6 @@ class PageControllerTest {
     private static final String TEST_LANGUAGE_ABBREV = "en";
     private static final String TEST_LINK_URL = "/test-page";
     private static final String TEST_LINK_TEXT = "Test Page";
-    private static final String PAGE_NOT_FOUND = "Page not found with id: ";
-    private static final String CONTENT_NOT_FOUND = "Page content not found for page id: ";
 
     // Test container
     @Container
@@ -80,19 +77,19 @@ class PageControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private PageService pageService;
 
-    @MockBean
+    @MockitoBean
     private PageRepository pageRepository;
 
-    @MockBean
+    @MockitoBean
     private PageContentRepository pageContentRepository;
 
-    @MockBean
+    @MockitoBean
     private LinkService linkService;
 
-    @MockBean
+    @MockitoBean
     private LanguageService languageService;
 
     // Test data
@@ -121,6 +118,8 @@ class PageControllerTest {
         language.setId(languageId);
         language.setName(TEST_LANGUAGE_NAME);
         language.setAbbreviation(TEST_LANGUAGE_ABBREV);
+        language.setFontAwesomeIcon("flag-usa");
+        language.setMdiIcon("flag");
 
         pageRequestDTO = new PageRequestDTO(
                 linkId,

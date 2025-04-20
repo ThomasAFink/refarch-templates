@@ -17,7 +17,6 @@ import de.muenchen.refarch.post.content.dto.PostContentResponseDTO;
 import de.muenchen.refarch.post.dto.PostRequestDTO;
 import de.muenchen.refarch.post.dto.PostResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,14 +54,12 @@ class PostServiceTest {
     private PostContent postContent;
     private PostRequestDTO postRequestDTO;
     private PostContentRequestDTO contentRequestDTO;
-    private LocalDateTime now;
 
     @BeforeEach
     void setUp() {
         postId = UUID.randomUUID();
         linkId = UUID.randomUUID();
         languageId = UUID.randomUUID();
-        now = LocalDateTime.now();
 
         link = new Link();
         link.setId(linkId);

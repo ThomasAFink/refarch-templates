@@ -20,11 +20,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -41,7 +41,6 @@ import org.testcontainers.utility.DockerImageName;
 @Import(de.muenchen.refarch.config.TestConfig.class)
 class CommentControllerTest {
 
-    private static final String API_COMMENTS = "/api/comments";
     private static final String API_COMMENTS_ID = "/api/comments/{commentId}/user/{userId}";
     private static final String API_COMMENTS_POST = "/api/comments/post/{postId}";
     private static final String API_COMMENTS_PAGE = "/api/comments/page/{pageId}";
@@ -70,7 +69,7 @@ class CommentControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private CommentService commentService;
 
     private UUID userId;

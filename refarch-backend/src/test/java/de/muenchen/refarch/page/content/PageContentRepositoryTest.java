@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.muenchen.refarch.language.Language;
 import de.muenchen.refarch.page.Page;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +43,6 @@ class PageContentRepositoryTest {
 
     private Page page;
     private Language language;
-    private LocalDateTime now;
 
     @DynamicPropertySource
     /* default */ static void setProperties(final DynamicPropertyRegistry registry) {
