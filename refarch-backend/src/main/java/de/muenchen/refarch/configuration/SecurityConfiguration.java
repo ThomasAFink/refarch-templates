@@ -56,7 +56,7 @@ public class SecurityConfiguration {
     @Bean
     public JwtDecoder jwtDecoder() {
         try {
-            String jwkSetUri = securityProperties.getUserInfoUri().replace("/userinfo", "/protocol/openid-connect/certs");
+            String jwkSetUri = securityProperties.getUserInfoUri().replace("/userinfo", "/certs");
             
             NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
             
