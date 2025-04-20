@@ -6,7 +6,6 @@ import de.muenchen.refarch.language.Language;
 import de.muenchen.refarch.post.Post;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -24,7 +23,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 )
 @Getter
 @Setter
-public class PostContent extends BaseEntity implements Serializable {
+public class PostContent extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 

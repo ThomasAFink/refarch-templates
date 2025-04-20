@@ -8,7 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @SuppressWarnings("PMD.ShortClassName")
-public class Link extends BaseEntity implements Serializable {
+public class Link extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 

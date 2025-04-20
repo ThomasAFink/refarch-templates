@@ -5,7 +5,6 @@ import de.muenchen.refarch.common.EntityCopyUtils;
 import de.muenchen.refarch.link.Link;
 import de.muenchen.refarch.post.content.PostContent;
 import jakarta.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -21,7 +20,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Getter
 @Setter
 @SuppressWarnings("PMD.ShortClassName")
-public class Post extends BaseEntity implements Serializable {
+public class Post extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 

@@ -4,7 +4,6 @@ import de.muenchen.refarch.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serial;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Table(name = "languages_i18n")
 @Getter
 @Setter
-public class Language extends BaseEntity implements Serializable {
+public class Language extends BaseEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

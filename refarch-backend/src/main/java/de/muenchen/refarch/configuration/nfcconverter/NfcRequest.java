@@ -28,6 +28,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @see java.text.Normalizer
  */
+@SuppressWarnings("unused")
 @Slf4j
 public class NfcRequest extends HttpServletRequestWrapper implements HttpServletRequest {
 
