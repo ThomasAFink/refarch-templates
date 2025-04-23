@@ -45,3 +45,18 @@ export function getUser(): Promise<User> {
       return u;
     });
 }
+
+/**
+ * Fetches users by language abbreviation.
+ */
+export function fetchUsersByLanguageAbbreviation(abbreviation: string): Promise<{ data: User[] }> {
+  return fetch(`api/backend-service/user-management/users/language-abbreviation/${abbreviation}`, getConfig())
+    .catch(defaultCatchHandler)
+    .then((response) => {
+      defaultResponseHandler(
+        response,
+        "Beim Laden der Benutzer ist ein Fehler aufgetreten."
+      );
+      return response.json();
+    });
+}

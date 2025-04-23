@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@vueuse/head": "^2.0.0"
+  }
+}
