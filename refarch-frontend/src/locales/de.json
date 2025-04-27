@@ -1,0 +1,15 @@
+{
+  "common": {
+    "home": "Startseite",
+    "getStarted": "Loslegen",
+    "language": "Sprache"
+  },
+  "home": {
+    "title": "Willkommen",
+    "description": "Dies ist die Startseite"
+  },
+  "getStarted": {
+    "title": "Loslegen",
+    "description": "Beginnen Sie Ihre Reise mit uns"
+  }
+} 

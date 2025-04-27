@@ -1,0 +1,15 @@
+{
+  "common": {
+    "home": "Home",
+    "getStarted": "Get Started",
+    "language": "Language"
+  },
+  "home": {
+    "title": "Welcome",
+    "description": "This is the home page"
+  },
+  "getStarted": {
+    "title": "Get Started",
+    "description": "Start your journey with us"
+  }
+} 

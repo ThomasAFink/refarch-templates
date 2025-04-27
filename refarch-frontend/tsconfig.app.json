@@ -10,6 +10,7 @@
     },
     "allowSyntheticDefaultImports": true,
     "noUncheckedSideEffectImports": true,
-    "types": ["unplugin-fonts/client"]
+    "types": ["unplugin-fonts/client"],
+    "resolveJsonModule": true
   }
 }

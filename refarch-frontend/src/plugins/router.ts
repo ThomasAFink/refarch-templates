@@ -1,228 +1,34 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw, Router } from 'vue-router';
-import NotFoundView from '@/views/NotFoundView.vue';
-import HomeView from '@/components/HomeView.vue';
-import LoginView from '@/admin/views/LoginView.vue';
-import AdminDashboard from '@/admin/views/AdminDashboard.vue';
-import LinkManagementView from '@/admin/views/LinkManagementView.vue';
-import LanguageManagementView from '@/admin/views/LanguageManagementView.vue';
-import UserManagementView from '@/admin/views/UserManagementView.vue';
-import { loadHomepageContents } from '@/i18n.ts';
-import store from '@/store/index';
-import i18n from '@/i18n.ts';
-import { getCurrentUserRole } from '@/api/auth-client';
-import Language from '@/types/Language';
-import type { Route } from '@/types/Route.ts';
-import { fetchRoutes } from '@/api/link-client';
+// Composables
+import { createRouter, createWebHashHistory } from "vue-router";
 
-interface UserRoles {
-  admin: boolean;
-  author: boolean;
-  user: boolean;
-}
+import { ROUTES_GETSTARTED, ROUTES_HOME } from "@/constants";
+import GetStartedView from "@/views/GetStartedView.vue";
+import HomeView from "@/views/HomeView.vue";
 
-export interface ExtendedRouter extends Router {
-  reload: () => Promise<void>;
-}
+const routes = [
+  {
+    path: "/",
+    name: ROUTES_HOME,
+    component: HomeView,
+    meta: {},
+  },
+  {
+    path: "/getstarted",
+    name: ROUTES_GETSTARTED,
+    component: GetStartedView,
+  },
+  { path: "/:catchAll(.*)*", redirect: "/" }, // CatchAll route
+];
 
-async function createAppRouter(): Promise<Router> {
-  await store.dispatch('fetchLanguages');
-  await store.dispatch('fetchRoutes');
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes,
+  scrollBehavior() {
+    return {
+      top: 0,
+      left: 0,
+    };
+  },
+});
 
-  const staticRoutes: RouteRecordRaw[] = [
-    {
-      path: '/',
-      name: 'Home',
-      component: HomeView,
-      beforeEnter: async (to, from, next) => {
-        if (!store.state.homeContentLoaded) {
-          await loadHomepageContents();
-          store.commit('SET_HOME_CONTENT_LOADED', true);
-        }
-        next();
-      }
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: LoginView,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next({ name: 'AdminDashboard' });
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          } else {
-            next();
-          }
-        } catch (error) {
-          next({ name: 'AdminDashboard' });
-        }
-      }
-    },
-    {
-      path: '/admin',
-      name: 'AdminDashboard',
-      component: AdminDashboard,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next();
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          }
-          else {
-            next({ name: 'Login' });
-          }
-        } catch (error) {
-          next({ name: 'Login' });
-        }
-      }
-    },
-    {
-      path: '/admin/new/blog/post/',
-      name: 'AdminNewBlogPost',
-      component: AdminDashboard,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next();
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          }
-          else {
-            next({ name: 'Login' });
-          }
-        } catch (error) {
-          next({ name: 'Login' });
-        }
-      }
-    },
-    {
-      path: '/admin/page-management/',
-      name: 'AdminPageManagement',
-      component: LinkManagementView,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next();
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          }
-          else {
-            next({ name: 'Login' });
-          }
-        } catch (error) {
-          next({ name: 'Login' });
-        }
-      }
-    },
-    {
-      path: '/admin/link-management/',
-      name: 'AdminLinkManagement',
-      component: UserManagementView,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next();
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          }
-          else {
-            next({ name: 'Login' });
-          }
-        } catch (error) {
-          next({ name: 'Login' });
-        }
-      }
-    },
-    {
-      path: '/admin/language-management/',
-      name: 'AdminLanguageManagement',
-      component: LanguageManagementView,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next();
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          }
-          else {
-            next({ name: 'Login' });
-          }
-        } catch (error) {
-          next({ name: 'Login' });
-        }
-      }
-    },
-    {
-      path: '/admin/user-management/',
-      name: 'AdminUserManagement',
-      component: UserManagementView,
-      beforeEnter: async (to, from, next) => {
-        try {
-          const roles = await getCurrentUserRole();
-          if (roles.admin || roles.author) {
-            next();
-          } else if(roles.user) {
-            next({ name: 'Home' });
-          }
-          else {
-            next({ name: 'Login' });
-          }
-        } catch (error) {
-          next({ name: 'Login' });
-        }
-      }
-    },
-    { 
-      path: '/:pathMatch(.*)*', 
-      name: 'NotFoundView', 
-      component: NotFoundView 
-    }
-  ];
-
-  const routes = [...staticRoutes, ...store.state.routes];
-
-  console.log(routes);
-
-  const router = createRouter({
-    history: createWebHistory(),
-    routes
-  }) as ExtendedRouter;
-
-  router.beforeEach((to, from, next) => {
-    const lang = to.path.split('/')[1];
-    if (lang && store.state.languages.find((l: Language) => l.abbreviation === lang)) {
-      i18n.global.locale = lang;
-    }
-    next();
-  });
-
-  store.watch(
-    (state: any) => state.routes,
-    (newRoutes: Route[]) => {
-      newRoutes.forEach((route: Route) => {
-        router.addRoute(route);
-      });
-    }
-  );
-
-  router.reload = async () => {
-    const routes = await fetchRoutes();
-    router.matcher = createRouter({
-      history: createWebHistory(),
-      routes: routes as RouteRecordRaw[]
-    }).matcher;
-  };
-
-  return router;
-}
-
-export default createAppRouter;
+export default router;

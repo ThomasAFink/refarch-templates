@@ -114,12 +114,12 @@ public class PostService {
         final Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST_NOT_FOUND + postId));
         final Language language = languageService.getLanguageById(request.languageId());
-    
+
         if (postContentRepository.existsByPostIdAndLanguageId(postId, language.getId())) {
             throw new IllegalStateException(
                     String.format(CONTENT_EXISTS, postId, language.getAbbreviation()));
         }
-    
+
         final PostContent content = new PostContent();
         content.setPost(post);
         content.setLanguage(language);
@@ -127,11 +127,11 @@ public class PostService {
         content.setContent(request.content());
         content.setShortDescription(request.shortDescription());
         content.setKeywords(request.keywords());
-    
+
         post.addContent(content);
         return mapToContentResponseDTO(postContentRepository.save(content));
     }
-    
+
     @PreAuthorize(Authorities.POST_WRITE)
     @Transactional
     public PostContentResponseDTO updateContent(final UUID postId, final UUID languageId, final PostContentRequestDTO request) {
@@ -141,12 +141,12 @@ public class PostService {
         final PostContent existingContent = postContentRepository.findByPostIdAndLanguageId(postId, languageId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format(CONTENT_NOT_FOUND, postId, languageId)));
-    
+
         existingContent.setTitle(request.title());
         existingContent.setContent(request.content());
         existingContent.setShortDescription(request.shortDescription());
         existingContent.setKeywords(request.keywords());
-    
+
         return mapToContentResponseDTO(postContentRepository.save(existingContent));
     }
 
@@ -158,7 +158,7 @@ public class PostService {
         final PostContent content = postContentRepository.findByPostIdAndLanguageId(postId, languageId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format(CONTENT_NOT_FOUND, postId, languageId)));
-    
+
         post.removeContent(content);
         postContentRepository.delete(content);
     }
